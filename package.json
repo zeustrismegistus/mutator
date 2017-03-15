@@ -1,0 +1,40 @@
+{
+  "name": "d__mutator",
+  "version": "0.0.1",
+  "description": "mutation helpers",
+  "main": "mutator.js",
+  "scripts": {
+    "start": "node mutator.js",
+    "debug-start": "node --debug-brk mutator.js --debug=5858",
+    "inspector": "node ./node_modules/node-inspector/bin/inspector.js ",
+    "inspectorclient": "start chrome http://127.0.0.1:8080/?port=5858",
+    "debug": "start npm run debug-start && start npm run inspector &&  npm run inspectorclient",
+    "test": "lab -t 100 -a code -L",
+    "test-debug": "node --debug-brk ./node_modules/.bin/lab -a code",
+    "test-cov-html": "lab -r html -o coverage.html -a code",
+    "test-lint-html": "lab -r html -o lint.html -a code -L",
+    "start-test": "node --debug-brk ./test/test.js --debug=5858",
+    "debug-test": "start npm run start-test && start npm run inspector && npm run inspectorclient"
+  },
+  "author": "zeustrismegistus@tutanota.com",
+  "license": "GPL3",
+  "dependencies": {
+    "d__jsmeta": "0.0.1"
+  },
+  "devDependencies": {
+    "lab": "^12.1.0",
+    "node-inspector": "^0.12.8",
+    "code": "^4.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zeustrismegistus/mutator"
+  },
+  "bugs": {
+    "url": "https://github.com/zeustrismegistus/mutator/issues"
+  },
+  "homepage": "https://github.com/zeustrismegistus/mutator",
+  "directories": {
+    "test": "test"
+  }
+}
