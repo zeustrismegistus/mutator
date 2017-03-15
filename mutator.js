@@ -478,13 +478,20 @@
 				
 				return rv;
 			},
-			decorateNew : function(/*expects function type declaration that expects an arg of something to decorate */ fn, ...args)
+			decorateNew : function(/*expects function type declaration that expects an arg of something to decorate */ fn)
 			{
 				validators.validateNotNullOrUndefined(fn);
 				validators.validateIsFunction(fn);
 				
+				var args = [this.outer].concat(Array.prototype.slice.call(arguments));
+				
+				function newCall(fn)
+				{
+					return new (Function.prototype.bind.apply(fn, args));
+				};
+				
 				//create decorator object
-				var decorator = new fn(this.outer, ...args);
+				var decorator = newCall(fn);
 			
 				return this.decorate(decorator);
 			},
@@ -564,10 +571,10 @@
 	//wire up the exports
 	var mutator =
 	{
-		extender = Extender,
-		decorator = Decorator,
-		crossCuttingDecorator = CrossCuttingDecorator,
-		seed = Seed
+		extender : Extender,
+		decorator : Decorator,
+		crossCuttingDecorator : CrossCuttingDecorator,
+		seed : Seed
 	};	
 	
 	// Node.js

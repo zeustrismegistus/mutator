@@ -19,7 +19,7 @@
   "author": "zeustrismegistus@tutanota.com",
   "license": "GPL3",
   "dependencies": {
-    "d__jsmeta": "0.0.1"
+    "d__jsmeta": "0.0.2"
   },
   "devDependencies": {
     "lab": "^12.1.0",

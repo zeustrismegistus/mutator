@@ -9,7 +9,7 @@ const after = lab.after;
 const expect = Code.expect;
 
 var jsmeta = require('d__jsmeta');
-var mutator = require('./../mutator.js')();
+var mutator = require('./../mutator.js');
 
 
 describe('using mutator', () => {
