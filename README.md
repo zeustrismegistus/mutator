@@ -1,8 +1,7 @@
 # mutator
 mutator helper function
-
-   it('extends some stuff ', (done) => {
 	
+    it('extends some stuff ', (done) => {
 		var testObj = {
 			propA : 'A',
 			propB : 'B',
