@@ -559,7 +559,7 @@
 			}
 		);
 	}
-
+	
 	(function(){
 		
 		Seed.new = function(core){return new Seed(core);}
@@ -568,13 +568,95 @@
 		Object.freeze(Seed);
 	})();
 	
+	
+	const MutationDictionary = function()
+	{
+		//privates
+		var that = this;
+		var __dictionary = {};
+		
+		//adds a mutation function
+		Object.defineProperty(that, "add",
+		{
+			value : function(name, /*expects function(obj, arg1, arg2, ..) returning the decorator*/ mutatorFn) 
+			{
+				jsmeta.validators.validateNotNullOrUndefined(name);
+				jsmeta.validators.validateIsFunction(mutatorFn);
+				
+				if(__dictionary[name])
+					throw 'already defined';
+				
+				__dictionary[name] = mutatorFn;
+				return that;
+			},
+			enumerable: true,
+			configurable: false
+		});
+		//gets a mutation function
+		Object.defineProperty(that, "as",
+		{
+			value : function(name) 
+			{
+				return __dictionary[name];
+			},
+			enumerable: true,
+			configurable: false
+		});
+		//applies a mutation function
+		Object.defineProperty(that, "has",
+		{
+			value : function(name, obj) 
+			{
+				var args = Array.prototype.slice.call(arguments).slice(1);
+				
+				return that.as(name).apply(null, args);
+			},
+			enumerable: true,
+			configurable: false
+		});
+		
+		//import export
+		Object.defineProperty(that, "serialize",
+		{
+			value : function() 
+			{
+				return jsmeta.JSONSerializer.serialize(__dictionary);
+			},
+			enumerable: true,
+			configurable: false
+		});
+		Object.defineProperty(that, "deserialize",
+		{
+			value : function(data) 
+			{
+				var data = jsmeta.JSONSerializer.deserialize(data);
+				__dictionary = data;
+				return that;
+			},
+			enumerable: true,
+			configurable: false
+		});
+		
+	};
+	(function(){
+		
+		MutationDictionary.new = function(){return new MutationDictionary();}
+		
+		//lock it down
+		Object.freeze(MutationDictionary);
+	})();
+	
+	
+	
+
 	//wire up the exports
 	var mutator =
 	{
 		extender : Extender,
 		decorator : Decorator,
 		crossCuttingDecorator : CrossCuttingDecorator,
-		seed : Seed
+		seed : Seed,
+		mutationDictionary: MutationDictionary
 	};	
 	
 	// Node.js
