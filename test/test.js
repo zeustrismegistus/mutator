@@ -215,6 +215,7 @@ describe('using mutator', () => {
 		var dict = mutator.mutationDictionary.new();
 		var now = new Date().getTime();
 		
+		
 		dict.add("name", function(obj, name){obj.name = name; return obj;})
 		.add("timestamp", function(obj, now) {obj.timestamp = now; return obj;})
 		.add("incrementCount", function(obj) 
@@ -242,15 +243,16 @@ describe('using mutator', () => {
 		expect(testObj.count).to.equal(2);
 
 		//serialize and test
+		//note that closures are not serialized
 		var data = dict.serialize();
 		var dict2 = mutator.mutationDictionary.new().deserialize(data);
 		
 		var testObj2 = { name: 'testObj2'};
-		
+		 
 		dict2.has("name", testObj2, "newName");
 		expect(testObj2.name).to.equal("newName");
 		
-		dict2.has("timestamp", testObj2, now);
+		dict2.has("timestamp", testObj2, now); 
 		expect(testObj2.timestamp).to.equal(now);
 		
 		dict2.has("incrementCount", testObj2);
