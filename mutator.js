@@ -466,16 +466,7 @@
 			decorate : function(decorator)
 			{
 				var rv = Decorator.decorate(decorator, this.outer);
-				
-				//percolate outer thru the decoration
-				rv.walkLayers(function(layer)
-				{
-					if(layer.outer)
-						layer.outer = rv;
-					
-					return false;
-				});
-				
+				this.outer = rv;
 				return rv;
 			},
 			decorateNew : function(/*expects function type declaration that expects an arg of something to decorate */ fn)
@@ -498,16 +489,7 @@
 			undecorate : function()
 			{
 				var rv = Decorator.undecorate(this.outer);
-							
-				//percolate outer thru the decoration
-				rv.walkLayers(function(layer)
-				{
-					if(layer.outer)
-						layer.outer = rv;
-					
-					return false;
-				});
-
+				this.outer = rv;
 				return rv;
 			},
 			//walks the decorated chain looking for a layer that's an instance of the specified type
