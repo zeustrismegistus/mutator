@@ -434,112 +434,87 @@
 		Object.freeze(CrossCuttingDecorator);
 	})();
 
-	const SelfDecoratingBehaviour =
-	{
-		//the behaviour we mixin
-		template : 
-		{
-			outer : null,
-			walkLayers : function(/*expects visitor function return true to stop walk*/ visitorFn)
-			{
-				return Decorator.walk(this.outer, visitorFn);
-			},
-			getFromOuter : function(positionFromOuter)
-			{
-				validators.validateNotNullOrUndefined(positionFromOuter);
-				validators.assert(function(){return positionFromOuter >= 0;});
-				
-				var rv = null;
-				
-				var i=0;
-				rv = this.walkLayers(function(layer)
-					{
-						if(i == positionFromOuter)
-							return true;
-						
-						i++;
-						return false;
-					});
-					
-				return rv;
-			},
-			decorate : function(decorator)
-			{
-				var rv = Decorator.decorate(decorator, this.outer);
-				this.outer = rv;
-				return rv;
-			},
-			decorateNew : function(/*expects function type declaration that expects an arg of something to decorate */ fn)
-			{
-				validators.validateNotNullOrUndefined(fn);
-				validators.validateIsFunction(fn);
-				
-				var args = [this.outer].concat(Array.prototype.slice.call(arguments));
-				
-				function newCall(fn)
-				{
-					return new (Function.prototype.bind.apply(fn, args));
-				};
-				
-				//create decorator object
-				var decorator = newCall(fn);
-			
-				return this.decorate(decorator);
-			},
-			undecorate : function()
-			{
-				var rv = Decorator.undecorate(this.outer);
-				this.outer = rv;
-				return rv;
-			},
-			//walks the decorated chain looking for a layer that's an instance of the specified type
-			asInstanceOf : function(/*expects constructor function*/ type)
-			{
-				//walk from the top down
-				return Decorator.asInstanceOf(this.outer, type);
-			},
-			//peforms an action as the specified asInstanceOf 
-			doAsInstanceOf : function(/*expects constructor function*/ type, /*expects a function(type) */ doFn)
-			{
-				Decorator.doAsInstanceOf(this.outer,type, doFn);
-				return this.outer;
-			},
-			//performs an action as the outer decoration
-			doAs : function(/*expects a function(outerDecoration)*/ doFn)
-			{
-				doFn(this.outer);	
-				return this.outer;
-			}
-		},
-		//extends obj with SelfDecoratingBehaviour 
-		give : function(obj)
-		{		
-			validators.validateNotNullOrUndefined(obj);
-			
-			Extender.addBehaviour(obj, SelfDecoratingBehaviour.template);
-			obj.outer = obj;
-			
-			return obj;
-		}
-	};	
 
 	//a thing that grows/mutates using the mutations above
 	function Seed(core)
 	{
-		SelfDecoratingBehaviour.give(this);	
-		
 		//private 
-		var __self = this;
+		var that = this;
 		var __core = core;
 		
 		//publics
-		Object.defineProperty(__self, "core", 
+		Object.defineProperty(this, "core", 
 			{ 
-				get : function() {return  __core;},
+				get : function() { return  __core; },
 				enumerable: true,
 				configurable: false
 			}
 		);
+		this.outer = core;
+		this.walkLayers = function(/*expects visitor function return true to stop walk*/ visitorFn)
+		{
+			return Decorator.walk(that.outer, visitorFn);
+		};
+		this.getFromOuter = function(positionFromOuter)
+		{
+			validators.validateNotNullOrUndefined(positionFromOuter);
+			validators.assert(function(){return positionFromOuter >= 0;});
+			
+			var rv = null;
+			
+			var i=0;
+			rv = this.walkLayers(function(layer)
+				{
+					if(i == positionFromOuter)
+						return true;
+					
+					i++;
+					return false;
+				});
+				
+			return rv;
+		};
+		this.decorate = function(decorator)
+		{
+			var rv = Decorator.decorate(decorator, that.outer);
+			that.outer = rv;
+			return that;
+		};
+		this.decorateNew = function(/*expects function type declaration that expects an arg of something to decorate */ fn)
+		{
+			validators.validateIsFunction(fn);
+
+			var args = [null, that.outer].concat(Array.prototype.slice.call(arguments).slice(1));
+			
+			//http://stackoverflow.com/questions/1606797/use-of-apply-with-new-operator-is-this-possible
+			var decorator = new (Function.prototype.bind.apply(fn, args));
+		
+			return that.decorate(decorator);
+		};
+		this.undecorate = function()
+		{
+			var rv = Decorator.undecorate(that.outer);
+			that.outer = rv;
+			return rv;
+		};
+		//walks the decorated chain looking for a layer that's an instance of the specified type
+		this.asInstanceOf = function(/*expects constructor function*/ type)
+		{
+			//walk from the top down
+			return Decorator.asInstanceOf(that.outer, type);
+		};
+		//peforms an action as the specified asInstanceOf 
+		this.doAsInstanceOf = function(/*expects constructor function*/ type, /*expects a function(type) */ doFn)
+		{
+			Decorator.doAsInstanceOf(that.outer,type, doFn);
+			return that.outer;
+		};
+		//performs an action as the outer decoration
+		this.doAs = function(/*expects a function(outerDecoration)*/ doFn)
+		{
+			doFn(that.outer);	
+			return that.outer;
+		};
 	}
 	
 	(function(){

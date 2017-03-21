@@ -188,7 +188,7 @@ describe('using mutator', () => {
 		//create a seed and then decorate it with a few layers
 		var thing = new mutator.seed('root');
 		
-		function simpleDec(decorated, iplus1, iplus2)
+		function simpleDec(decorated, i, iplus1, iplus2)
 		{ 
 			this.pos = i; 
 			this.posplus1 = iplus1; 
@@ -196,7 +196,7 @@ describe('using mutator', () => {
 		}
 		
 		for(var i=0;i<10;i++)
-			thing = thing.decorateNew(simpleDec, i+1, i+2);
+			thing.decorateNew(simpleDec, i, i+1, i+2);
 		
 		for(var i=9;i>0;i--)
 			expect(thing.getFromOuter(9-i).pos).to.equal(i);
