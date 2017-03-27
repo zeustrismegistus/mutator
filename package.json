@@ -1,6 +1,6 @@
 {
   "name": "d__mutator",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "mutation helpers",
   "main": "mutator.js",
   "scripts": {
@@ -20,7 +20,7 @@
   "license": "GPL3",
   "dependencies": {
     "d__jsmeta": "0.0.6",
-	"d__format": "0.0.3"
+    "d__format": "0.0.3"
   },
   "devDependencies": {
     "lab": "^12.1.0",
