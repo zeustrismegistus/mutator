@@ -2,6 +2,7 @@
 
 	const jsmeta = require("d__jsmeta");
 	const validators = jsmeta.validators;
+	const dformat = require('d__format');
 	
 	/* adds behaviour to a thing */
 	const Extender = 
@@ -14,24 +15,25 @@
 			validators.validateNotNullOrUndefined(targetObj);
 
 			if(excludeList && Array.isArray(excludeList) == false)
-				throw "exclusion array expected";
+				throw new Error("exclusion array expected");
 			
 			for(var p in sourceObj)
 			{
 				if(excludeList)
-					if(p in excludeList)
+					if(excludeList.indexOf(p) > -1)
 						continue;
 				
 				var member = sourceObj[p];
 				var memberName = p;
 				
 				//remove any prior implementations
-				if(p in targetObj)
+				if(jsmeta.hasMembers(targetObj,p))
 					delete targetObj[p];
 				
 				//replace
 				targetObj[p] = member;
 			}
+			return targetObj;
 		},
 		/* removes members from target using source as the list*/
 		removeBehaviour : function (targetObj, sourceObj,  /* expects array of members to ignore*/ excludeList)
@@ -41,17 +43,18 @@
 			validators.validateNotNullOrUndefined(targetObj);
 		
 			if(excludeList && Array.isArray(excludeList) == false)
-				throw "exclusion array expected";
+				throw new Error("exclusion array expected");
 			
 			for(var p in sourceObj)
 			{
 				if(excludeList)
-					if(p in excludeList)
+					if(excludeList.indexOf(p)> -1)
 						continue;
 				
-				if(p in targetObj)
+				if(jsmeta.hasMembers(targetObj,p))
 					delete targetObj[p];
 			}
+			return targetObj;
 		}
 	};
 
@@ -231,7 +234,7 @@
 			validators.validateNotNullOrUndefined(decorated);
 			
 			if(decorated !== expectedDecorated)
-				throw "invalid decorated";
+				throw new Error( "invalid decorated");
 			
 			//validate the old item's signature is the same as the new item
 			var finalExcludeList = ["__decorated"];
@@ -400,8 +403,7 @@
 					Object.defineProperty(decorator, memberName, 
 					{
 						enumerable:true,
-						configurable : false, 
-						writable : false,
+						configurable : true, 
 						value: newFn
 					});
 				}
@@ -419,7 +421,7 @@
 							"{" +
 								"_crossCuttingFn('" + memberName + "', this, val);" + 
 							"}," +
-							"enumerable:true, configurable : false" +
+							"enumerable:true, configurable : true" +
 						"}" +
 					");";
 					//console.log(evalText);
@@ -497,6 +499,16 @@
 			that.outer = rv;
 			return rv;
 		};
+		this.seal = function()
+		{
+			Object.seal(that);
+			return that;
+		};
+		this.freeze = function()
+		{
+			Object.freeze(that);
+			return that;
+		};
 		//walks the decorated chain looking for a layer that's an instance of the specified type
 		this.asInstanceOf = function(/*expects constructor function*/ type)
 		{
@@ -541,7 +553,7 @@
 				jsmeta.validators.validateIsFunction(mutatorFn);
 				
 				if(__dictionary[name])
-					throw 'already defined';
+					throw new Error('already defined');
 				
 				__dictionary[name] = mutatorFn;
 				return that;
@@ -577,7 +589,7 @@
 		{
 			value : function() 
 			{
-				return jsmeta.JSONSerializer.serialize(__dictionary);
+				return dformat.serialize(__dictionary);
 			},
 			enumerable: true,
 			configurable: false
@@ -586,8 +598,7 @@
 		{
 			value : function(data) 
 			{
-				var data = jsmeta.JSONSerializer.deserialize(data);
-				__dictionary = data;
+				__dictionary = dformat.deserialize(data);
 				return that;
 			},
 			enumerable: true,
@@ -616,6 +627,7 @@
 		mutationDictionary: MutationDictionary
 	};	
 	
+	/* $lab:coverage:off$ */
 	// Node.js
     if (typeof module !== 'undefined' && module.exports) {
         module.exports = mutator;
@@ -630,6 +642,6 @@
     else {
         this.mutator = mutator;
     }
-	
+	/* $lab:coverage:on$ */
 })();
 	

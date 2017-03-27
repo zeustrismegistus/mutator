@@ -42,6 +42,16 @@ describe('using mutator', () => {
 		mutator.extender.removeBehaviour(target, testObj);
 		expect(jsmeta.hasSameObjectSignaturesAsTemplate(testObj,target)).to.equal(false);
 		
+		var notCopy = {};
+		mutator.extender.addBehaviour(notCopy, testObj, ['testFn']);
+		expect(jsmeta.hasSameObjectSignaturesAsTemplate(testObj,notCopy)).to.equal(false);
+		
+		expect(function(){return mutator.extender.addBehaviour({propA:'a'}, testObj, {});}).to.throw(Error, "exclusion array expected");
+		expect(mutator.extender.addBehaviour({propA:'a'}, testObj).propA).to.equal('A');
+
+		expect(function(){return mutator.extender.removeBehaviour({propA:'a'}, testObj, {});}).to.throw(Error, "exclusion array expected");
+		expect(mutator.extender.removeBehaviour({propA:'a'}, testObj, ['propA']).propA).to.equal('a');
+		
 		done();
     });
 

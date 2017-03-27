@@ -9,7 +9,7 @@
     "inspector": "node ./node_modules/node-inspector/bin/inspector.js ",
     "inspectorclient": "start chrome http://127.0.0.1:8080/?port=5858",
     "debug": "start npm run debug-start && start npm run inspector &&  npm run inspectorclient",
-    "test": "lab -t 100 -a code -L",
+    "test": "lab -t 100 -a code",
     "test-debug": "node --debug-brk ./node_modules/.bin/lab -a code",
     "test-cov-html": "lab -r html -o coverage.html -a code",
     "test-lint-html": "lab -r html -o lint.html -a code -L",
@@ -19,7 +19,8 @@
   "author": "zeustrismegistus@tutanota.com",
   "license": "GPL3",
   "dependencies": {
-    "d__jsmeta": "0.0.4"
+    "d__jsmeta": "0.0.6",
+	"d__format": "0.0.3"
   },
   "devDependencies": {
     "lab": "^12.1.0",
