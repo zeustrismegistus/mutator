@@ -87,7 +87,32 @@ describe('using mutator', () => {
 		var target = mutator.decorator.decorate({}, testObj);
 		TestObjTester.test(testObj);
 		TestObjTester.test(target);
-			
+		
+		//do edges
+		var target2 = mutator.decorator.decorate(null, testObj);
+		TestObjTester.test(target2);
+		
+		var target3= mutator.decorator.decorate(null, testObj, ['propA']);
+		expect(target3.propA).to.equal(undefined);
+		
+		//undecorate
+		expect(function(){return mutator.decorator.undecorate();}).to.throw(Error, "undefined");
+		expect(function(){return mutator.decorator.undecorate(null);}).to.throw(Error, "null");
+		
+		var target3undecorated = mutator.decorator.undecorate(target3);
+		var target3undecoratedtwice = mutator.decorator.undecorate(target3undecorated);
+		
+		//walk 
+		mutator.decorator.walk(target3, function(layer){return false;});
+		
+		//validate decoration
+		mutator.decorator.validateDecoration(target, testObj);
+		expect(function(){mutator.decorator.validateDecoration(target, {});}).to.throw(Error, "invalid decorated");
+		mutator.decorator.validateDecoration(target, testObj, ['bogusProp']);
+		
+		var target4 = mutator.decorator.decorate({propA:'a'},7);
+		mutator.decorator.validateDecoration(target4, 7);
+		
 		done();
     });
 
@@ -171,8 +196,8 @@ describe('using mutator', () => {
 		function(memberName, decorator, args){
 
 			ccDecObjPreAudit.push(memberName);
-			return {success:true,result:args};
-
+			return mutator.crossCuttingDecorator.newScrubbedArgs(true, args);
+		
 		}, function(memberName, decorator, args, rv){
 
 			ccDecObjPostAudit.push(memberName + '1');
@@ -189,14 +214,22 @@ describe('using mutator', () => {
 		expect(ccDecObj2.fn()).to.equal("intercepted" + ccDecObj.fn());
 		expect(ccDecObjPreAudit[2]).to.equal("fn")
 		expect(ccDecObjPostAudit[2]).to.equal("fn1")
-				
+		
+		//edges
+		var target2 = mutator.crossCuttingDecorator.decorate(ccDecObj);
+		var target3 = mutator.crossCuttingDecorator.decorate(ccDecObj, null, null, null);
+		var target4 = mutator.crossCuttingDecorator.decorate(ccDecObj, function(memberName, decorator, args){}, null, null);
+		var target5 = mutator.crossCuttingDecorator.decorate(ccDecObj, function(memberName, decorator, args){return mutator.crossCuttingDecorator	.newScrubbedArgs(true, null);}, null, null);
+		var target6 = mutator.crossCuttingDecorator.decorate(ccDecObj, function(memberName, decorator, args){return mutator.crossCuttingDecorator	.newScrubbedArgs(false, args);}, null, null);
+		var target7 = mutator.crossCuttingDecorator.decorate(ccDecObj, function(memberName, decorator, args){return mutator.crossCuttingDecorator	.newScrubbedArgs(false, args);}, function(memberName, decorator, args, rv){return null;}, null);		
+		
 		done();
     });
 	
     it('grows a seed ', (done) => {
 	
 		//create a seed and then decorate it with a few layers
-		var thing = new mutator.seed('root');
+		var thing = mutator.seed.new('root');
 		
 		function simpleDec(decorated, i, iplus1, iplus2)
 		{ 
@@ -215,6 +248,23 @@ describe('using mutator', () => {
 		{
 			expect(layer.__decorated).to.equal(undefined);
 		}); 
+		
+		expect(thing.doAs(function(self){})).to.equal(thing.outer);
+		expect(thing.asInstanceOf(simpleDec).pos).to.equal(9);
+		
+		//undecorate
+		thing.undecorate();
+		expect(thing.asInstanceOf(simpleDec).pos).to.equal(8);
+		
+		//edges
+		var thing2 = mutator.seed.new('thing2').seal();
+		thing2.outer.a = 'a';
+		expect(thing2.outer.a).to.equal(undefined);
+		
+		var thing3 = mutator.seed.new('thing3').freeze();
+		thing3.outer.a = 'a';
+		expect(thing3.outer.a).to.equal(undefined);
+		
 		
 		done();
     });	
@@ -270,6 +320,9 @@ describe('using mutator', () => {
 		
 		dict2.has("incrementCount", testObj2);
 		expect(testObj2.count).to.equal(2);
+		
+		//edges
+		expect(function(){dict.add("name", function(obj, name){obj.name2 = name; return obj;});}).to.throw(Error, "already defined");
 		
 		
 		done();

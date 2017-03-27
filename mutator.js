@@ -102,7 +102,7 @@
 					continue;
 				
 				if(excludeList)
-					if(p in excludeList)
+					if(excludeList.indexOf(p) > -1)
 						continue;
 				
 				//if the decorator has the member already, assume it's intentional
@@ -275,6 +275,17 @@
 		
 	*/
 	const CrossCuttingDecorator = {
+		newScrubbedArgs : function(success, newArgs){
+			
+			function scrubbedArgs (success, newArgs)
+			{
+				this.success = success;
+				this.newArgs = newArgs;
+			}
+			
+			return new scrubbedArgs(success,newArgs);
+		},
+
 		decorate : function(decorated, 
 		/*function(memberName, decorator, args) returns { success : true/false, newArgs: }*/ preDecoratingFn,
 		/*function(memberName, decorator, args, rv) returns newRv*/ postDecoratingFn, 
@@ -282,7 +293,7 @@
 		{
 			"use strict";
 			validators.validateNotNullOrUndefined(decorated);
-
+			var that = this;
 			var decorator = 
 			{
 				__decorated : decorated
@@ -297,7 +308,7 @@
 				if (typeof member === 'function') {
 
 					//run the pre function to scrub the args
-					var preRv = { success: true, newArgs: args};
+					var preRv = that.newScrubbedArgs(true, args);
 					if(!jsmeta.isNullOrUndefined(preDecoratingFn))
 						preRv = preDecoratingFn(memberName, decorator, args);
 					
@@ -326,7 +337,7 @@
 						//it's a get
 						
 						//run the pre function
-						var preRv = { success: true, newArgs: null};
+						var preRv = that.newScrubbedArgs(true, null);
 						if(!jsmeta.isNullOrUndefined(preDecoratingFn))
 							 preRv = preDecoratingFn(memberName, decorator, null);
 						
@@ -351,7 +362,7 @@
 						//it's a set
 					
 						//run the pre function to scrub the set value
-						var preRv = { success: true, newArgs: args};
+						var preRv = that.newScrubbedArgs(true, args);
 						if(!jsmeta.isNullOrUndefined(preDecoratingFn))
 							preRv = preDecoratingFn(memberName, decorator, args);
 					
@@ -501,12 +512,12 @@
 		};
 		this.seal = function()
 		{
-			Object.seal(that);
+			Object.seal(that.outer);
 			return that;
 		};
 		this.freeze = function()
 		{
-			Object.freeze(that);
+			Object.freeze(that.outer);
 			return that;
 		};
 		//walks the decorated chain looking for a layer that's an instance of the specified type
