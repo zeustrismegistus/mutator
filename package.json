@@ -20,7 +20,7 @@
   "license": "GPL3",
   "dependencies": {
     "d__jsmeta": "0.0.6",
-    "d__format": "0.0.3"
+    "d__format": "0.0.4"
   },
   "devDependencies": {
     "lab": "^12.1.0",

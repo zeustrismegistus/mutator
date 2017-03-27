@@ -217,7 +217,7 @@
 			validators.validateIsFunction(doFn);
 			
 			var as = Decorator.asInstanceOf(decorator, type);
-			if(!jsmeta.isNullOrUndefined(as))
+			if(as)
 				doFn(as);
 			
 			return decorator;
@@ -239,8 +239,8 @@
 			//validate the old item's signature is the same as the new item
 			var finalExcludeList = ["__decorated"];
 			
-			if(!jsmeta.isNullOrUndefined(excludeList))
-				finalExcludeList.concat(excludeList);
+			if(excludeList)
+				finalExcludeList = finalExcludeList.concat(excludeList);
 			
 			if(!jsmeta.isPrimitive(expectedDecorated))
 			{
