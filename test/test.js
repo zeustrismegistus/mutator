@@ -215,13 +215,92 @@ describe('using mutator', () => {
 		expect(ccDecObjPreAudit[2]).to.equal("fn")
 		expect(ccDecObjPostAudit[2]).to.equal("fn1")
 		
+		//do sets
+		ccDecObj2.a = 'newA';
+		expect(ccDecObjPreAudit[3]).to.equal("a")
+		expect(ccDecObjPostAudit[3]).to.equal("a1")
+		
 		//edges
-		var target2 = mutator.crossCuttingDecorator.decorate(ccDecObj);
-		var target3 = mutator.crossCuttingDecorator.decorate(ccDecObj, null, null, null);
+		var passthruTarget = mutator.crossCuttingDecorator.decorate(ccDecObj);
+		expect(passthruTarget.fn()).to.equal("adsfads");
+		passthruTarget.a = 'newa';
+		expect(passthruTarget.a).to.equal('newa');
+		
+		var passthruTarget2 = mutator.crossCuttingDecorator.decorate(ccDecObj, null, null, null);
+		expect(passthruTarget2.fn()).to.equal("adsfads");
+		passthruTarget2.a = 'new' + passthruTarget2.a;  //we're passthru decorating the core which we changed above
+		expect(passthruTarget2.a).to.equal('newnewa');
+		
+		var passthruTarget3 = mutator.crossCuttingDecorator.decorate(ccDecObj, function(memberName, decorator, args){
+			return mutator.crossCuttingDecorator.newScrubbedArgs(true, args);
+			
+		},function(memberName, decorator, args, rv)
+		{
+			return rv;
+		}, ['bogusproperty']);
+		expect(passthruTarget3.fn()).to.equal("adsfads");
+		passthruTarget3.a = 'new' + passthruTarget3.a;  //we're passthru decorating the core which we changed above
+		expect(passthruTarget3.a).to.equal('newnewnewa');
+		
+		var preNayTarget = mutator.crossCuttingDecorator.decorate(ccDecObj, function(memberName, decorator, args)
+		{
+			return mutator.crossCuttingDecorator.newScrubbedArgs(false, args);
+		});
+		expect(preNayTarget.fn()).to.equal(undefined);
+		preNayTarget.a = 'new' + preNayTarget.a;  //we're passthru decorating the core which we changed above
+		expect(preNayTarget.a).to.equal(undefined);
+		
+		var badPreNayTarget = mutator.crossCuttingDecorator.decorate(ccDecObj, function(memberName, decorator, args)
+		{
+			return null;
+		});
+		expect(badPreNayTarget.fn()).to.equal(undefined);
+		badPreNayTarget.a = 'new' + badPreNayTarget.a;  //we're passthru decorating the core which we changed above
+		expect(badPreNayTarget.a).to.equal(undefined);
+		
+		var postNayTarget = mutator.crossCuttingDecorator.decorate(ccDecObj, null, function(memberName, decorator, args, rv)
+		{
+			return undefined;
+		});
+		expect(postNayTarget.fn()).to.equal(undefined);
+		postNayTarget.a = 'new' + postNayTarget.a;  //we're passthru decorating the core which we changed above
+		expect(postNayTarget.a).to.equal(undefined);
+		
+		var partialPassthruTarget1 = mutator.crossCuttingDecorator.decorate(ccDecObj, function(memberName, decorator, args){
+			return mutator.crossCuttingDecorator.newScrubbedArgs(true, args);
+			
+		},function(memberName, decorator, args, rv)
+		{
+			return rv;
+		}, ['a']);
+		expect(partialPassthruTarget1.fn()).to.equal("adsfads");
+		expect(partialPassthruTarget1.a).to.equal(undefined);
+		
+		
 		var target4 = mutator.crossCuttingDecorator.decorate(ccDecObj, function(memberName, decorator, args){}, null, null);
+		target4.fn();
+		target4.a = 'newa';
+		
 		var target5 = mutator.crossCuttingDecorator.decorate(ccDecObj, function(memberName, decorator, args){return mutator.crossCuttingDecorator	.newScrubbedArgs(true, null);}, null, null);
+		target5.fn();
+		target5.a = 'newa';
+		
 		var target6 = mutator.crossCuttingDecorator.decorate(ccDecObj, function(memberName, decorator, args){return mutator.crossCuttingDecorator	.newScrubbedArgs(false, args);}, null, null);
-		var target7 = mutator.crossCuttingDecorator.decorate(ccDecObj, function(memberName, decorator, args){return mutator.crossCuttingDecorator	.newScrubbedArgs(false, args);}, function(memberName, decorator, args, rv){return null;}, null);		
+		target6.fn();
+		target6.a = 'newa';
+		
+		var target7 = mutator.crossCuttingDecorator.decorate(ccDecObj, function(memberName, decorator, args){return mutator.crossCuttingDecorator	.newScrubbedArgs(false, args);}, function(memberName, decorator, args, rv){return null;}, null);	
+		target7.fn();
+		target7.a = 'newa';
+		
+		var target8 = mutator.crossCuttingDecorator.decorate(ccDecObj, function(memberName, decorator, args){return mutator.crossCuttingDecorator	.newScrubbedArgs(false, args);}, function(memberName, decorator, args, rv){return null;}, ['a', 'b', 'bogus']);		
+		target8.fn();
+		target8.a = 'newa';
+		
+		var target9 = mutator.crossCuttingDecorator.decorate(ccDecObj, function(memberName, decorator, args){return mutator.crossCuttingDecorator	.newScrubbedArgs(true, args);}, function(memberName, decorator, args, rv){return rv;}, ['a']);		
+		target9.fn();
+		target9.a = 'newa';
+		target9.b = 'newb';
 		
 		done();
     });
@@ -255,6 +334,9 @@ describe('using mutator', () => {
 		//undecorate
 		thing.undecorate();
 		expect(thing.asInstanceOf(simpleDec).pos).to.equal(8);
+		
+		//core
+		expect(thing.core).to.equal('root');
 		
 		//edges
 		var thing2 = mutator.seed.new('thing2').seal();

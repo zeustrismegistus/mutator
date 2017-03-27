@@ -309,26 +309,22 @@
 
 					//run the pre function to scrub the args
 					var preRv = that.newScrubbedArgs(true, args);
-					if(!jsmeta.isNullOrUndefined(preDecoratingFn))
+					if(preDecoratingFn)
 						preRv = preDecoratingFn(memberName, decorator, args);
 					
 					//if the scrub indicates continuing, run the function
-					if(preRv !== undefined && preRv !== null && preRv.success)
-					{
-						//run the function
-						var rv = member.apply(decorated, preRv.newArgs);
+					if(preRv)
+						if(preRv.success)
+						{
+							//run the function
+							var rv = member.apply(decorated, preRv.newArgs);
 
-						//run the post function to scrub the rv
-						if(!jsmeta.isNullOrUndefined(postDecoratingFn))
-						{
-							var newRv = postDecoratingFn(memberName, decorator, preRv.newArgs, rv);
-							return newRv;
-						}
-						else
-						{
+							//run the post function to scrub the rv
+							if(postDecoratingFn)
+								return postDecoratingFn(memberName, decorator, preRv.newArgs, rv);
+							
 							return rv;
 						}
-					}
 				}
 				else
 				{
@@ -338,24 +334,22 @@
 						
 						//run the pre function
 						var preRv = that.newScrubbedArgs(true, null);
-						if(!jsmeta.isNullOrUndefined(preDecoratingFn))
+						if(preDecoratingFn)
 							 preRv = preDecoratingFn(memberName, decorator, null);
 						
 						//get is allowed?
-						if(preRv !== undefined && preRv !== null && preRv.success)
-						{
-							//get the value
-							var rv = decorated[memberName];
-
-							//run the post function
-							if(!jsmeta.isNullOrUndefined(postDecoratingFn))
+						if(preRv)
+							if(preRv.success)
 							{
-								var newRv = postDecoratingFn(memberName, decorator, preRv.newArgs, rv);
-								return newRv;
-							}
+								//get the value
+								var rv = decorated[memberName];
 
-							return rv;
-						}
+								//run the post function
+								if(postDecoratingFn)
+									return postDecoratingFn(memberName, decorator, preRv.newArgs, rv);
+								
+								return rv;
+							}
 					}
 					else
 					{
@@ -363,28 +357,28 @@
 					
 						//run the pre function to scrub the set value
 						var preRv = that.newScrubbedArgs(true, args);
-						if(!jsmeta.isNullOrUndefined(preDecoratingFn))
+						if(preDecoratingFn)
 							preRv = preDecoratingFn(memberName, decorator, args);
 					
 						//we're allowed to set?
-						if(preRv !== undefined && preRv !== null && preRv.success)
-						{
-							//set the value
-							decorated[memberName] = args;
-							
-							//run the post function
-							if(!jsmeta.isNullOrUndefined(postDecoratingFn))
+						if(preRv)
+							if(preRv.success)
 							{
-								postDecoratingFn(memberName, decorator, preRv.newArgs, null);
+								//set the value
+								decorated[memberName] = args;
+								
+								//run the post function
+								if(postDecoratingFn)
+									postDecoratingFn(memberName, decorator, preRv.newArgs, null);
+								
 							}
-						}
 					}
 				}
 			};
 			
 			var newDecoratedExcludeList = ["__decorated"];
-			if(!jsmeta.isNullOrUndefined(decoratedExcludeList))
-				newDecoratedExcludeList.concat(decoratedExcludeList);
+			if(decoratedExcludeList)
+				newDecoratedExcludeList = newDecoratedExcludeList.concat(decoratedExcludeList);
 			
 			//construct the wrapped member
 			for(var p in decorated)
@@ -392,7 +386,7 @@
 				var member = decorated[p];
 				var memberName = p;
 
-				if(p in newDecoratedExcludeList)
+				if(newDecoratedExcludeList.indexOf(p)> -1)
 					continue;
 				
 				if (typeof member === 'function') {
