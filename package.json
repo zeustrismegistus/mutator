@@ -1,6 +1,6 @@
 {
   "name": "d__mutator",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "mutation helpers",
   "main": "mutator.js",
   "scripts": {
