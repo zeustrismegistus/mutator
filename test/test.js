@@ -345,12 +345,19 @@ describe('using mutator', () => {
 			expect(layer.__decorated).to.equal(undefined);
 		}); 
 		
-		expect(thing.doAs(function(self){})).to.equal(thing.outer);
+		expect(thing.doAs(function(self){})).to.equal(thing);
 		expect(thing.asInstanceOf(simpleDec).pos).to.equal(9);
+		
+		//syncOuter
+		var syncObj = thing.syncOuter({});
+		expect(syncObj.pos).to.equal(9);
 		
 		//undecorate
 		thing.undecorate();
 		expect(thing.asInstanceOf(simpleDec).pos).to.equal(8);
+		
+		syncObj = thing.syncOuter({});
+		expect(syncObj.pos).to.equal(8);
 		
 		//core
 		expect(thing.asCore()).to.equal('root');
@@ -365,17 +372,19 @@ describe('using mutator', () => {
 		thing3.outer.a = 'a';
 		expect(thing3.outer.a).to.equal(undefined);
 		
-		//seedness
-		function newThing(obj)
+		//face
+ 		function newThing(obj)
 		{
 			this.name = 'newthing';
-			mutator.seed.new(obj).giveSeednessTo(this);
+			this.obj = obj;
 		};
 		
-		var newThing = new newThing("root");
-		expect(newThing.asCore()).to.equal('root');
-		newThing.doAsCore(function(self){expect(self).to.equal('root');});
-		
+		var face = mutator.face.new(new newThing({a:1}));
+		expect(face.name).to.equal('newthing');
+		expect(face.obj.a).to.equal(1);
+		face.__.decorate({b:'b'});
+		face.sync();
+		expect(face.b).to.equal('b');
 		done();
     });	
 

@@ -475,13 +475,18 @@
 	})();
 
 
+	
 	//a thing that grows/mutates using the mutations above
 	function Seed(core)
 	{
+		//privates
+		var that = this;
+		
+		//publics
 		this.outer = core;
 		this.walkLayers = function(/*expects visitor function return true to stop walk*/ visitorFn)
 		{
-			return Decorator.walk(this.outer, visitorFn);
+			return Decorator.walk(that.outer, visitorFn);
 		};
 		this.getFromOuter = function(positionFromOuter)
 		{
@@ -491,7 +496,7 @@
 			var rv = null;
 			
 			var i=0;
-			rv = this.walkLayers(function(layer)
+			rv = that.walkLayers(function(layer)
 				{
 					if(i == positionFromOuter)
 						return true;
@@ -504,67 +509,69 @@
 		};
 		this.decorate = function(decorator)
 		{
-			var rv = Decorator.decorate(decorator, this.outer);
-			this.outer = rv;
-			return this;
+			var rv = Decorator.decorate(decorator, that.outer);
+			that.outer = rv;
+			return that;
 		};
 		this.decorateNew = function(/*expects function type declaration that expects an arg of something to decorate */ fn)
 		{
 			validators.validateIsFunction(fn);
 
-			var args = [null, this.outer].concat(Array.prototype.slice.call(arguments).slice(1));
+			var args = [null, that.outer].concat(Array.prototype.slice.call(arguments).slice(1));
 			
 			//http://stackoverflow.com/questions/1606797/use-of-apply-with-new-operator-is-this-possible
 			var decorator = new (Function.prototype.bind.apply(fn, args));
 		
-			return this.decorate(decorator);
+			return that.decorate(decorator);
 		};
 		this.undecorate = function()
 		{
-			var rv = Decorator.undecorate(this.outer);
-			this.outer = rv;
-			return rv;
+			var rv = Decorator.undecorate(that.outer);
+			that.outer = rv;
+			return that;
 		};
 		this.seal = function()
 		{
-			Object.seal(this.outer);
-			return this;
+			Object.seal(that.outer);
+			return that;
 		};
 		this.freeze = function()
 		{
-			Object.freeze(this.outer);
-			return this;
+			Object.freeze(that.outer);
+			return that;
 		};
 		//walks the decorated chain looking for a layer that's an instance of the specified type
 		this.asInstanceOf = function(/*expects constructor function*/ type)
 		{
 			//walk from the top down
-			return Decorator.asInstanceOf(this.outer, type);
+			return Decorator.asInstanceOf(that.outer, type);
 		};
 		//peforms an action as the specified asInstanceOf 
 		this.doAsInstanceOf = function(/*expects constructor function*/ type, /*expects a function(type) */ doFn)
 		{
-			Decorator.doAsInstanceOf(this.outer,type, doFn);
-			return this.outer;
+			Decorator.doAsInstanceOf(that.outer,type, doFn);
+			return that;
 		};
 		//performs an action as the outer decoration
 		this.doAs = function(/*expects a function(outerDecoration)*/ doFn)
 		{
-			doFn(this.outer);	
-			return this.outer;
+			doFn(that.outer);	
+			return that;
 		};
 		this.asCore = function()
 		{
-			return Decorator.asCore(this.outer);
+			return Decorator.asCore(that.outer);
 		};
 		this.doAsCore = function(/*expects a function(type) */ doFn)
 		{
-			return Decorator.doAsCore(this.outer, doFn);
+			Decorator.doAsCore(that.outer, doFn);
+			return that;
 		};
-		//gives seed behaviour to the object
-		this.giveSeednessTo = function(obj)
+		//decorates syncObj with outer seed behaviour
+		this.syncOuter = function(syncObj)
 		{
-			Extender.addBehaviour(obj, this, ['giveSeednessTo']);	
+			Decorator.decorate(syncObj, that.outer);
+			return syncObj;
 		};
 	}
 	
@@ -577,7 +584,40 @@
 	})();
 	
 	
-	const MutationDictionary = function()
+	function Face(thing)
+	{
+		//publics
+		this.__ = Seed.new(thing);
+		this.sync = function()
+		{
+			//remove old face
+			for(var p in this)
+			{
+				if(p == '__')
+					continue;
+				if(p == 'sync')
+					continue;
+				
+				delete this[p];
+			}
+			
+			this.__.syncOuter(this);
+		};
+	
+		//initialize
+		this.sync();
+		
+	}
+	(function(){
+		
+		Face.new = function(thing){return new Face(thing);}
+		
+		//lock it down
+		Object.freeze(Face);
+	})();
+	
+	
+	function MutationDictionary ()
 	{
 		//privates
 		var that = this;
@@ -663,6 +703,7 @@
 		decorator : Decorator,
 		crossCuttingDecorator : CrossCuttingDecorator,
 		seed : Seed,
+		face : Face,
 		mutationDictionary: MutationDictionary
 	};	
 	
