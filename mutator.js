@@ -586,27 +586,35 @@
 	
 	function Face(thing)
 	{
-		//publics
-		this.__ = Seed.new(thing);
-		this.sync = function()
-		{
-			//remove old face
-			for(var p in this)
-			{
-				if(p == '__')
-					continue;
-				if(p == 'sync')
-					continue;
-				
-				delete this[p];
-			}
-			
-			this.__.syncOuter(this);
-		};
-	
-		//initialize
-		this.sync();
+		//privates
+		var that = this;
 		
+		//publics
+		Object.defineProperty(this, "__",
+		{
+			value : Seed.new(thing),
+			enumerable : false,
+			configurable : false
+		});
+		//add a method to the seed to sync the face
+		Object.defineProperty(this.__, "sync",
+		{ 
+			value:function()
+			{
+				//remove old face
+				for(var p in that) //this enumeration will skip __
+				{
+					delete that[p];
+				}
+				
+				that.__.syncOuter(that);
+			},
+			enumerable : false,
+			configurable : false
+		});	
+		
+		//sync the face to the outer seed
+		this.__.sync();
 	}
 	(function(){
 		
