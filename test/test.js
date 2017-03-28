@@ -383,7 +383,7 @@ describe('using mutator', () => {
 		expect(face.name).to.equal('newthing');
 		expect(face.obj.a).to.equal(1);
 		face.__.decorate({b:'b'});
-		face.__.sync();
+		face.__.syncFace();
 		expect(face.b).to.equal('b');
 		done();
     });	

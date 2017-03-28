@@ -597,7 +597,7 @@
 			configurable : false
 		});
 		//add a method to the seed to sync the face
-		Object.defineProperty(this.__, "sync",
+		Object.defineProperty(this.__, "syncFace",
 		{ 
 			value:function()
 			{
@@ -614,7 +614,7 @@
 		});	
 		
 		//sync the face to the outer seed
-		this.__.sync();
+		this.__.syncFace();
 	}
 	(function(){
 		
