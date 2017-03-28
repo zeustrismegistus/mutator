@@ -593,7 +593,7 @@
 		Object.defineProperty(this, "__",
 		{
 			value : Seed.new(thing),
-			enumerable : false,
+			enumerable : true,
 			configurable : false
 		});
 		//add a method to the seed to sync the face
@@ -602,8 +602,11 @@
 			value:function()
 			{
 				//remove old face
-				for(var p in that) //this enumeration will skip __
+				for(var p in that) 
 				{
+					if(p == "__")
+						continue;
+					
 					delete that[p];
 				}
 				
