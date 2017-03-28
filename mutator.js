@@ -189,6 +189,38 @@
 			}
 			return rv;
 		},
+		/*returns the core decorated thing*/
+		asCore : function(decorator)
+		{
+			"use strict";
+			validators.validateNotNullOrUndefined(decorator);
+			
+			var rv = null;
+			
+			var item = decorator;
+			while(!jsmeta.isNullOrUndefined(item))
+			{	
+				if(!item.hasOwnProperty('__decorated'))
+				{	
+					rv = item;
+					break;
+				}
+				item = item.__decorated;
+			}
+			return rv;
+		},
+		doAsCore : function(decorator, /*expects a function(type) */ doFn)
+		{
+			"use strict";
+			validators.validateNotNullOrUndefined(decorator);
+			validators.validateIsFunction(doFn);
+			
+			var as = Decorator.asCore(decorator);
+			if(as)
+				doFn(as);
+			
+			return decorator;
+		},
 		/*walks decorated chain until meets instanceof type*/
 		asInstanceOf : function(decorator, /*expects a constructor function*/ type)
 		{
@@ -209,6 +241,7 @@
 			}
 			return rv;
 		},
+
 		/*does doFn on asInstanceOf type*/
 		doAsInstanceOf : function(decorator, /*expects a constructor function*/ type, /*expects a function(type) */ doFn)
 		{
@@ -445,22 +478,10 @@
 	//a thing that grows/mutates using the mutations above
 	function Seed(core)
 	{
-		//private 
-		var that = this;
-		var __core = core;
-		
-		//publics
-		Object.defineProperty(this, "core", 
-			{ 
-				get : function() { return  __core; },
-				enumerable: true,
-				configurable: false
-			}
-		);
 		this.outer = core;
 		this.walkLayers = function(/*expects visitor function return true to stop walk*/ visitorFn)
 		{
-			return Decorator.walk(that.outer, visitorFn);
+			return Decorator.walk(this.outer, visitorFn);
 		};
 		this.getFromOuter = function(positionFromOuter)
 		{
@@ -483,54 +504,67 @@
 		};
 		this.decorate = function(decorator)
 		{
-			var rv = Decorator.decorate(decorator, that.outer);
-			that.outer = rv;
-			return that;
+			var rv = Decorator.decorate(decorator, this.outer);
+			this.outer = rv;
+			return this;
 		};
 		this.decorateNew = function(/*expects function type declaration that expects an arg of something to decorate */ fn)
 		{
 			validators.validateIsFunction(fn);
 
-			var args = [null, that.outer].concat(Array.prototype.slice.call(arguments).slice(1));
+			var args = [null, this.outer].concat(Array.prototype.slice.call(arguments).slice(1));
 			
 			//http://stackoverflow.com/questions/1606797/use-of-apply-with-new-operator-is-this-possible
 			var decorator = new (Function.prototype.bind.apply(fn, args));
 		
-			return that.decorate(decorator);
+			return this.decorate(decorator);
 		};
 		this.undecorate = function()
 		{
-			var rv = Decorator.undecorate(that.outer);
-			that.outer = rv;
+			var rv = Decorator.undecorate(this.outer);
+			this.outer = rv;
 			return rv;
 		};
 		this.seal = function()
 		{
-			Object.seal(that.outer);
-			return that;
+			Object.seal(this.outer);
+			return this;
 		};
 		this.freeze = function()
 		{
-			Object.freeze(that.outer);
-			return that;
+			Object.freeze(this.outer);
+			return this;
 		};
 		//walks the decorated chain looking for a layer that's an instance of the specified type
 		this.asInstanceOf = function(/*expects constructor function*/ type)
 		{
 			//walk from the top down
-			return Decorator.asInstanceOf(that.outer, type);
+			return Decorator.asInstanceOf(this.outer, type);
 		};
 		//peforms an action as the specified asInstanceOf 
 		this.doAsInstanceOf = function(/*expects constructor function*/ type, /*expects a function(type) */ doFn)
 		{
-			Decorator.doAsInstanceOf(that.outer,type, doFn);
-			return that.outer;
+			Decorator.doAsInstanceOf(this.outer,type, doFn);
+			return this.outer;
 		};
 		//performs an action as the outer decoration
 		this.doAs = function(/*expects a function(outerDecoration)*/ doFn)
 		{
-			doFn(that.outer);	
-			return that.outer;
+			doFn(this.outer);	
+			return this.outer;
+		};
+		this.asCore = function()
+		{
+			return Decorator.asCore(this.outer);
+		};
+		this.doAsCore = function(/*expects a function(type) */ doFn)
+		{
+			return Decorator.doAsCore(this.outer, doFn);
+		};
+		//gives seed behaviour to the object
+		this.giveSeednessTo = function(obj)
+		{
+			Extender.addBehaviour(obj, this, ['giveSeednessTo']);	
 		};
 	}
 	

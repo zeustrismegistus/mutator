@@ -137,7 +137,8 @@ describe('using mutator', () => {
 			this.d = 'd';
 		}
 	
-		var thing = mutator.decorator.decorate(new typeA(), {});
+		var core = {core:'core'};
+		var thing = mutator.decorator.decorate(new typeA(), core);
 		expect(thing.a).to.equal('a');
 		
 		//decorate and preserve decorator
@@ -176,6 +177,22 @@ describe('using mutator', () => {
 		expect(thing.readA()).to.equal('B override a');
 		expect(thing.c).to.equal('cc');
 		expect(thing.b).to.equal('bb');
+		
+		var core = mutator.decorator.asCore(thing);
+		expect(core).to.equal(core);
+		mutator.decorator.doAsCore(thing, function(self){expect(self.core).to.equal('core');});
+		
+		//edges
+		var badCore = mutator.decorator.asCore({});
+		expect(badCore).to.equal({});
+		
+		expect(function(){mutator.decorator.asCore(null);}).to.throw(Error, "null");
+		
+		var badDec = {a:'a', __decorated:null};
+		var badDecCore = mutator.decorator.asCore(badDec);
+		expect(badDecCore).to.equal(null);
+		
+		mutator.decorator.doAsCore(badDec, function(self){ throw new Error("kack");});
 		
 		done();
     });	
@@ -336,7 +353,8 @@ describe('using mutator', () => {
 		expect(thing.asInstanceOf(simpleDec).pos).to.equal(8);
 		
 		//core
-		expect(thing.core).to.equal('root');
+		expect(thing.asCore()).to.equal('root');
+		thing.doAsCore(function(self){expect(self).to.equal('root');});
 		
 		//edges
 		var thing2 = mutator.seed.new('thing2').seal();
@@ -347,6 +365,16 @@ describe('using mutator', () => {
 		thing3.outer.a = 'a';
 		expect(thing3.outer.a).to.equal(undefined);
 		
+		//seedness
+		function newThing(obj)
+		{
+			this.name = 'newthing';
+			mutator.seed.new(obj).giveSeednessTo(this);
+		};
+		
+		var newThing = new newThing("root");
+		expect(newThing.asCore()).to.equal('root');
+		newThing.doAsCore(function(self){expect(self).to.equal('root');});
 		
 		done();
     });	
