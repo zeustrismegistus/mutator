@@ -479,14 +479,11 @@
 	//a thing that grows/mutates using the mutations above
 	function Seed(core)
 	{
-		//privates
-		var that = this;
-		
 		//publics
 		this.outer = core;
 		this.walkLayers = function(/*expects visitor function return true to stop walk*/ visitorFn)
 		{
-			return Decorator.walk(that.outer, visitorFn);
+			return Decorator.walk(this.outer, visitorFn);
 		};
 		this.getFromOuter = function(positionFromOuter)
 		{
@@ -496,7 +493,7 @@
 			var rv = null;
 			
 			var i=0;
-			rv = that.walkLayers(function(layer)
+			rv = this.walkLayers(function(layer)
 				{
 					if(i == positionFromOuter)
 						return true;
@@ -509,68 +506,68 @@
 		};
 		this.decorate = function(decorator)
 		{
-			var rv = Decorator.decorate(decorator, that.outer);
-			that.outer = rv;
-			return that;
+			var rv = Decorator.decorate(decorator, this.outer);
+			this.outer = rv;
+			return this;
 		};
 		this.decorateNew = function(/*expects function type declaration that expects an arg of something to decorate */ fn)
 		{
 			validators.validateIsFunction(fn);
 
-			var args = [null, that.outer].concat(Array.prototype.slice.call(arguments).slice(1));
+			var args = [null, this.outer].concat(Array.prototype.slice.call(arguments).slice(1));
 			
 			//http://stackoverflow.com/questions/1606797/use-of-apply-with-new-operator-is-this-possible
 			var decorator = new (Function.prototype.bind.apply(fn, args));
 		
-			return that.decorate(decorator);
+			return this.decorate(decorator);
 		};
 		this.undecorate = function()
 		{
-			var rv = Decorator.undecorate(that.outer);
-			that.outer = rv;
-			return that;
+			var rv = Decorator.undecorate(this.outer);
+			this.outer = rv;
+			return this;
 		};
 		this.seal = function()
 		{
-			Object.seal(that.outer);
-			return that;
+			Object.seal(this.outer);
+			return this;
 		};
 		this.freeze = function()
 		{
-			Object.freeze(that.outer);
-			return that;
+			Object.freeze(this.outer);
+			return this;
 		};
 		//walks the decorated chain looking for a layer that's an instance of the specified type
 		this.asInstanceOf = function(/*expects constructor function*/ type)
 		{
 			//walk from the top down
-			return Decorator.asInstanceOf(that.outer, type);
+			return Decorator.asInstanceOf(this.outer, type);
 		};
 		//peforms an action as the specified asInstanceOf 
 		this.doAsInstanceOf = function(/*expects constructor function*/ type, /*expects a function(type) */ doFn)
 		{
-			Decorator.doAsInstanceOf(that.outer,type, doFn);
-			return that;
+			Decorator.doAsInstanceOf(this.outer,type, doFn);
+			return this;
 		};
 		//performs an action as the outer decoration
 		this.doAs = function(/*expects a function(outerDecoration)*/ doFn)
 		{
-			doFn(that.outer);	
-			return that;
+			doFn(this.outer);	
+			return this;
 		};
 		this.asCore = function()
 		{
-			return Decorator.asCore(that.outer);
+			return Decorator.asCore(this.outer);
 		};
 		this.doAsCore = function(/*expects a function(type) */ doFn)
 		{
-			Decorator.doAsCore(that.outer, doFn);
-			return that;
+			Decorator.doAsCore(this.outer, doFn);
+			return this;
 		};
 		//decorates syncObj with outer seed behaviour
 		this.syncOuter = function(syncObj)
 		{
-			Decorator.decorate(syncObj, that.outer);
+			Decorator.decorate(syncObj, this.outer);
 			return syncObj;
 		};
 	}
@@ -586,9 +583,6 @@
 	
 	function Face(thing)
 	{
-		//privates
-		var that = this;
-		
 		//publics
 		Object.defineProperty(this, "__",
 		{
@@ -597,27 +591,28 @@
 			configurable : false
 		});
 		//add a method to the seed to sync the face
-		Object.defineProperty(this.__, "syncFace",
+		Object.defineProperty(this, "syncFace",
 		{ 
 			value:function()
 			{
 				//remove old face
-				for(var p in that) 
+				for(var p in this) 
 				{
 					if(p == "__")
 						continue;
-					
-					delete that[p];
+								
+					delete this[p];
 				}
 				
-				that.__.syncOuter(that);
+				this.__.syncOuter(this);
+				
 			},
 			enumerable : false,
 			configurable : false
 		});	
 		
 		//sync the face to the outer seed
-		this.__.syncFace();
+		this.syncFace();
 	}
 	(function(){
 		
