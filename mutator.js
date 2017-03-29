@@ -598,7 +598,8 @@
 				//remove old face
 				for(var p in this) 
 				{
-					if(p == "__")
+					if(p == "__" ||
+						p == "syncFace")
 						continue;
 								
 					delete this[p];
@@ -607,7 +608,7 @@
 				this.__.syncOuter(this);
 				
 			},
-			enumerable : false,
+			enumerable : true,
 			configurable : false
 		});	
 		
