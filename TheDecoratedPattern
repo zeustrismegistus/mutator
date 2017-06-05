@@ -18,8 +18,12 @@ Decorated flows in sync with time. This is more natural/organic.
 
 Decorated tackles the problem of Fluent Mutation with a single, consistently applied idiom.
 
- Decorated/Decorator are essentially variations of LinkedLists with the behavioural mutations. With Decorator we are giving a thing a Next. With Decorated we are giving a thing a Previous.
+Decorated/Decorator are essentially variations of LinkedLists with the behavioural mutations. With Decorator we are giving a thing a Next. With Decorated we are giving a thing a Previous.
 
 Note that LinkedLists are the only pattern you need to build an Arithmetic Engine. An implementation of this can be found here - https://github.com/Piirtaa/Arith. This is a fascinating exercise if you're into this kinda thing.
 
-Arithmetic engines/Counting are the precursor to language, if you think about it symbolically. You'll need a way to distinguish symbols consistently. Thus you'll need to "count" consistently.
+Arithmetic engines/Counting are the precursor to language, if you think about it symbolically. You'll need a way to distinguish symbols consistently. Thus you'll need to "count" consistently.  
+
+This might explain why Hebrew numbers its symbols.
+
+
