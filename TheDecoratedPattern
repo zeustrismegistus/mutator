@@ -26,5 +26,5 @@ Arithmetic engines/Counting are the precursor to language, if you think about it
 
 This might explain why Hebrew numbers its symbols.
 
-This pattern also tangentially makes moot the whole (again no pun intended) Inheritance Vs Composition debate. It's not really much of a debate given that composition is literally infinitely superior.  This just describes how to do composition in a fluent way.
+This pattern also tangentially makes moot the whole (again no pun intended) Inheritance Vs Composition debate. It's not really much of a debate given that composition is literally infinitely superior.  This just describes how to do composition in a fluent, narrative-y, phi-y
 
